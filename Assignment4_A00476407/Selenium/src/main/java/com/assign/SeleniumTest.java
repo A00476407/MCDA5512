@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 public class SeleniumTest {
@@ -29,27 +30,36 @@ public class SeleniumTest {
         driver = new ChromeDriver(options);
     }
 
-    @Test
-    public void testFormSubmissionAndConfirmation() {
+    @DataProvider(name = "testdata")
+    public Object[][] TestDataFeed() {
+        Object[][] data = {{"Test Name 1", "test1@email.com", "Female", "Canada", true},
+                {"Test Name 2", "test2@email.com", "Male", "United States", true},
+                {"Test Name 3", "test3@email.com", "Male", "Australia", false}};
+        return data;
+    }
+
+    @Test(dataProvider = "testdata")
+    public void testFormSubmissionAndConfirmation(String name, String email, String gender, String country, Boolean subscription) {
         // Open the webpage
         driver.get("https://dev.cs.smu.ca/sel/practice.html");
 
         // Fill out the form
         WebElement nameInput = driver.findElement(By.id("name"));
-        nameInput.sendKeys("Ka Man Leung");
+        nameInput.sendKeys(name);
 
         WebElement emailInput = driver.findElement(By.id("email"));
-        emailInput.sendKeys("kaman.leung@smu.ca");
+        emailInput.sendKeys(email);
 
-        WebElement femaleSelect = driver.findElement(By.id("female"));
-        femaleSelect.click();
+        WebElement genderSelect = driver.findElement(By.id(gender.toLowerCase()));
+        genderSelect.click();
 
         WebElement countryDropdown = driver.findElement(By.id("country"));
         Select countrySelect = new Select(countryDropdown);
-        countrySelect.selectByVisibleText("Canada");
+        countrySelect.selectByVisibleText(country);
 
         WebElement newsletterCheckbox = driver.findElement(By.id("newsletter"));
-        newsletterCheckbox.click();
+        if (subscription)
+            newsletterCheckbox.click();
 
         WebElement submitButton = driver.findElement(By.id("submit"));
         submitButton.click();
@@ -67,19 +77,19 @@ public class SeleniumTest {
         WebElement detailsContainer = driver.findElement(By.className("details-container"));
 
         WebElement nameElement = detailsContainer.findElement(By.id("name"));
-        Assert.assertEquals(nameElement.getText(), "Ka Man Leung", "Name mismatch");
+        Assert.assertEquals(nameElement.getText(), name, "Name mismatch");
 
         WebElement emailElement = detailsContainer.findElement(By.id("email"));
-        Assert.assertEquals(emailElement.getText(), "kaman.leung@smu.ca", "Email mismatch");
+        Assert.assertEquals(emailElement.getText(), email, "Email mismatch");
 
         WebElement countryElement = detailsContainer.findElement(By.id("country"));
-        Assert.assertEquals(countryElement.getText(), "Canada", "Country mismatch");
+        Assert.assertEquals(countryElement.getText(), country, "Country mismatch");
 
         WebElement genderElement = detailsContainer.findElement(By.id("gender"));
-        Assert.assertEquals(genderElement.getText(), "Female", "Gender mismatch");
+        Assert.assertEquals(genderElement.getText(), gender, "Gender mismatch");
 
         WebElement newsletterElement = detailsContainer.findElement(By.id("newsletterValue"));
-        Assert.assertEquals(newsletterElement.getText(), "Yes", "Newsletter subscription mismatch");
+        Assert.assertEquals(newsletterElement.getText(), subscription ? "Yes" : "No", "Newsletter subscription mismatch");
     }
 
     @AfterTest
